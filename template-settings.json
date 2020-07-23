@@ -1,0 +1,29 @@
+{
+    "ports": {
+        "repl": 2605,
+        "server": 2606,
+        "executor": 2607
+    },
+    "ips": {
+        "server": "10.29.1.203"
+    },
+    "name": "workstation-yeah",
+    "gpus": [
+        {
+            "id": 0,
+            "memory": 11000,
+            "maxProcesses": 1
+        }, {
+            "id": 1,
+            "memory": 11000,
+            "maxProcesses": 1
+        }
+    ],
+    "cpus": [
+        {
+            "id": 0,
+            "maxProcesses": 10
+        }
+    ],
+    "overrideNewConnectionsFromSameWorkstation": true
+}

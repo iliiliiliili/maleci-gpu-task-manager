@@ -1,0 +1,21 @@
+{
+  "name": "maleci-gpu-task-runner",
+  "version": "0.1.0",
+  "description": "Allows to queue gpu tasks and run them when resources are free",
+  "main": "main.js",
+  "scripts": {},
+  "keywords": [
+    "gpu",
+    "task runner",
+    "maleci"
+  ],
+  "author": "Illia Oleksiienko <io@eng.au.dk>",
+  "license": "MIT",
+  "dependencies": {
+    "bcrypt": "^5.0.0"
+  },
+  "devDependencies": {
+    "eslint": "^6.8.0",
+    "eslint-plugin-jsdoc": "^20.3.1"
+  }
+}
