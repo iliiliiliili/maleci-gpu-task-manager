@@ -41,46 +41,29 @@ class Task {
 
         return new Promise ((resolve) => {
 
-            const uid = parseInt (execSync (`id -u ${this.user}`) + '');
+            const uid = parseInt (execSync ('id -u root') + '');
 
-            const process = spawn ('screen', [
-                '-S', this.name, '-dm', './run.sh', this.workdingDir,
-                this.script, this.taskId, settings.ports.executor, this.saveScreen
+            const process = spawn ('runuser', [
+                '-l', this.user, '-c',
+                `CUDA_VISIBLE_DEVICES="${visibleDevices}" screen -S ${this.name} -dm /gtm/run.sh ${this.workdingDir} '${this.script}'`
+                + ` ${this.taskId} ${settings.ports.executor} ${this.saveScreen}`
             ], {
                 uid,
-                env: {
-                    'CUDA_VISIBLE_DEVICES': visibleDevices,
-                },
             });
 
+            console.log ([
+                '-l', this.user, '-c',
+                `CUDA_VISIBLE_DEVICES="${visibleDevices}" screen -S ${this.name} -dm /gtm/run.sh ${this.workdingDir} '${this.script}'`
+                + ` ${this.taskId} ${settings.ports.executor} ${this.saveScreen}`
+            ]);
+
+            process.stdout.on ('data', (d) => console.log ('out: ' + d));
+            process.stderr.on ('data', (d) => console.log ('err: ' + d));
             process.on ('close', () => {
-            
+
                 console.log ('started: ' + this.name);
                 resolve ();
             });
-            
-
-
-
-            // exec (this.script, {
-            //     cwd: this.workdingDir,
-            //     uid,
-            //     env: {
-            //         'CUDA_VISIBLE_DEVICES': visibleDevices,
-            //     }
-            // }, (err, stdout, stderr) => {
-
-            //     console.log ({err, stdout, stderr});
-
-            //     if (err) {
-                    
-            //         reject (err);
-            //     } else {
-
-            //         console.log ('resolve ', this.taskId);
-            //         resolve (stdout);
-            //     }
-            // });
         });
     }
 
