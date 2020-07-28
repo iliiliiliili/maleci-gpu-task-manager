@@ -184,6 +184,8 @@ class Connection {
  */
 const connections = {};
 
+let processQueue = null;
+
 const server = net.createServer (socket => {
 
     /**
@@ -235,6 +237,8 @@ const server = net.createServer (socket => {
 
         console.log (workstations);
         console.log (workstations.length);
+
+        processQueue ();
     };
 
     const connection = new Connection (socket, onReady);
@@ -271,30 +275,7 @@ const server = net.createServer (socket => {
 server.listen (settings.ports.server, '0.0.0.0');
 console.log ('Started server at port: ' + settings.ports.server);
 
-
-
-const queue = [
-    // new Task (13, 'io', 'any', 0, 0, 'sleep 5 && pwd', '/home/io'),
-    // new Task (14, 'io', 'any', 0, 0, 'sleep 5 && ls && pwd ', '/home/io/Detection/Models/io/variational-nn-pytorch'),
-    // new Task (14, 'io', 'any', 0, 0, 'sleep 5 && pwd', '/home/io'),
-    // new Task (15, 'io', 'any', 1, 3000, 'sleep 5 && pwd ', '/home/io'),
-    // new Task (16, 'io', 'any', 2, 3001, 'sleep 5 && pwd ', '/home/io'),
-    // new Task (17, 'io', 'any', 2, 3000, 'sleep 5 && pwd ', '/home/io'),
-    // new Task (18, 'io', 'any', 3, 4000, 'sleep 5 && pwd ', '/home/io'),
-    // new Task (19, 'io', 'any', 4, 4000, 'sleep 5 && pwd ', '/home/io'),
-    // //new Task (20, 'io', 'any', 7, 4000, 'sleep 5 && pwd ', '/home/io'),
-    // new Task (21, 'gtm', 'any', 0, 4000, 'sleep 5 && pwd ', '/home/gtm'),
-    // new Task (13, 'io', 'root', 0, 'ls -la', '/mnt/c/FILES/Aarhus/maleci-gpu-task-manager'),
-    // new Task ('io', 0, 'bash task.sh', '/mnt/c/FILES/Aarhus/maleci-gpu-task-manager'),
-    // new Task (16, 'io', 'any', 0, 0, 'sleep 5 && bash -c "source /home/io/miniconda3/etc/profile.d/conda.sh && conda activate vnnpytorch38 && python debug.py"', '/home/io/Detection/Models/io/variational-nn-pytorch'),
-    // new Task (17, 'io', 'any', 1, 0, 'sleep 5 && bash -c "source /home/io/miniconda3/etc/profile.d/conda.sh && conda activate vnnpytorch38 && python debug.py"', '/home/io/Detection/Models/io/variational-nn-pytorch'),
-    // new Task (18, 'io', 'any', 3, 0, 'sleep 5 && bash -c "source /home/io/miniconda3/etc/profile.d/conda.sh && conda activate vnnpytorch38 && python debug.py"', '/home/io/Detection/Models/io/variational-nn-pytorch'),
-    // new Task (19, 'gtm', 'any', 1, 0, 'gmtio1', 'bash ./debug.sh', '/home/io/Detection/Models/io/variational-nn-pytorch'),
-    // new Task (20, 'gtm', 'any', 3, 0, 'gmtio3', 'bash ./debug.sh', '/home/io/Detection/Models/io/variational-nn-pytorch'),
-    // new Task (21, 'gtm', 'any', 2, 0, 'gmtio2', 'bash ./debug.sh', '/home/io/Detection/Models/io/variational-nn-pytorch'),
-    // new Task (22, 'gtm', 'any', 4, 0, 'gmtio4', 'bash ./debug.sh', '/home/io/Detection/Models/io/variational-nn-pytorch'),
-];
-
+const queue = [];
 
 /**
  * @param {Task} task
@@ -338,7 +319,7 @@ const allocateResources = (task) => {
     }
 };
 
-const processQueue = () => {
+processQueue = () => {
 
     for (let i = 0; i < queue.length; i ++) {
 
@@ -385,14 +366,14 @@ const add = (user, workstaton, gpus, minimalGpuMemory, name, script, workdingDir
     processQueue ();
 };
 
-const showQueue = (user = null) => {
+const showQueue = (user = null, log = console.log) => {
 
     const selectedQueue = user === null ?
         queue : queue.filter (task => task.user === user);
 
-    console.log (selectedQueue.map (
+    log (selectedQueue.map (
         task => task.toString () + (user === null ? '' : ' script: ' + task.script)
-    ));
+    ).join ('\n'));
 };
 
 const createRepl = (socket) => {
@@ -415,7 +396,7 @@ const createRepl = (socket) => {
 
         replLog (`
 login: login(username, password)
-add task: add(workstaton, gpus, minimalGpuMemory, name, script, workdingDir, saveScreen = false)
+add task: add(workstaton, gpus, minimalGpuMemory, name, script, workdingDir, saveScreen = true)
 showQueue: showQueue(self = true)
 password: password(password) // changes password for current user
 createUser: createUser(username, password)
@@ -439,7 +420,7 @@ createUser: createUser(username, password)
     );
 
     current.context.processQueue = processQueue;
-    current.context.add = (workstaton, gpus, minimalGpuMemory, name, script, workdingDir, saveScreen = false) => {
+    current.context.add = (workstaton, gpus, minimalGpuMemory, name, script, workdingDir, saveScreen = true) => {
 
         if (user === null) {
 
@@ -451,12 +432,7 @@ createUser: createUser(username, password)
     };
     current.context.showQueue = (self = true) => {
         
-        if (self) {
-
-            showQueue (user);
-        } else {
-            showQueue ();
-        }
+        showQueue (self ? user : null, replLog);
     };
     current.context.queue = showQueue;
 
