@@ -1,12 +1,18 @@
-const fs = require ('fs');
-const {exec, execSync, spawn} = require ('child_process');
-const {O_RDWR, O_NOCTTY} = fs.constants;
-const fd = fs.openSync ('/dev/tty', O_RDWR + O_NOCTTY);
-const settings = require ('./settings.json');
+const {argv} = require ('process');
+
+const DEBUG = argv [2] === 'debug';
+
+if (DEBUG) {
+
+    console.log ({DEBUG});
+}
+
+const {execSync, spawn} = require ('child_process');
+const settings = require (DEBUG ? './debug-settings.json' : './settings.json');
 
 class Task {
 
-    constructor (taskId, user, workstaton, gpus, minimalGpuMemory, name, script, workdingDir, saveScreen = true) {
+    constructor (taskId, user, workstaton, gpus, minimalGpuMemory, name, script, workdingDir, saveScreen = true, logScreen = true) {
         
         this.taskId = taskId;
         this.user = user;
@@ -17,6 +23,7 @@ class Task {
         this.script = script;
         this.workdingDir = workdingDir;
         this.saveScreen = saveScreen;
+        this.logScreen = logScreen;
     }
 
     describe () {
@@ -43,19 +50,20 @@ class Task {
 
             const uid = parseInt (execSync ('id -u root') + '');
 
-            const process = spawn ('runuser', [
+            const args = [
                 '-l', this.user, '-c',
-                `CUDA_VISIBLE_DEVICES="${visibleDevices}" screen -S ${this.name} -dm /gtm/run.sh ${this.workdingDir} '${this.script}'`
+                `CUDA_VISIBLE_DEVICES="${visibleDevices}" screen -S ${this.name}`
+                + (this.logScreen ? ` -L -Logfile screenlog.${this.taskId}.${this.name}` : '')
+                + ` -dm /gtm/run.sh ${this.workdingDir} '${this.script}'`
                 + ` ${this.taskId} ${settings.ports.executor} ${this.saveScreen}`
-            ], {
+            ];
+
+
+            const process = spawn ('runuser', args, {
                 uid,
             });
 
-            console.log ([
-                '-l', this.user, '-c',
-                `CUDA_VISIBLE_DEVICES="${visibleDevices}" screen -S ${this.name} -dm /gtm/run.sh ${this.workdingDir} '${this.script}'`
-                + ` ${this.taskId} ${settings.ports.executor} ${this.saveScreen}`
-            ]);
+            console.log (args);
 
             process.stdout.on ('data', (d) => console.log ('out: ' + d));
             process.stderr.on ('data', (d) => console.log ('err: ' + d));
