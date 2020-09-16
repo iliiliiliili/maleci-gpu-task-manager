@@ -30,10 +30,18 @@ const login = async (username, password) => {
 
     if (user === undefined) {
 
-        return 'Unknown username or password';
+        return {
+            
+            success: false,
+            error: 'Unknown username or password'
+        };
     } else {
 
-        return true;
+        return {
+
+            success: true,
+            accessLevel: user.accessLevel,
+        };
     }
 };
 
@@ -56,7 +64,23 @@ const password = async (username, password) => (
     })
 );
 
-const createUser = async (username, password) => (
+const setAccessLevel = (username, newAccessLevel) => {
+
+    const user = database.users.find (a => a.login === username);
+
+    if (user === undefined) {
+
+        return 'Unknown username';
+    } else {
+
+        user.accessLevel = newAccessLevel;
+        save ();
+
+        return true;
+    }
+};
+
+const createUser = async (username, password, accessLevel = 1) => (
 
     bcrypt.hash (password, saltRounds).then (hash => {
 
@@ -72,6 +96,7 @@ const createUser = async (username, password) => (
             database.users.push ({
                 login: username,
                 password: hash,
+                accessLevel,
             });
 
             save ();
@@ -84,8 +109,27 @@ const createUser = async (username, password) => (
     })
 );
 
+const deleteUser = (username) => {
+
+    const user = database.users.find (a => a.login === username);
+
+    if (user === undefined) {
+
+        return 'Unknown username';
+
+    } else {
+
+        database.users = database.users.filter (a => a.login !== username);
+        save ();
+
+        return true;
+    }
+};
+
 module.exports = {
     login,
     createUser,
     password,
+    setAccessLevel,
+    deleteUser,
 };
