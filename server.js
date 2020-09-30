@@ -1,6 +1,15 @@
+const {argv} = require ('process');
+
+const DEBUG = argv [2] === 'debug';
+
+if (DEBUG) {
+
+    console.log ({DEBUG});
+}
+
 const Task = require ('./task');
 const net = require ('net');
-const settings = require ('./settings.json');
+const settings = require (DEBUG ? './debug-settings.json' : './settings.json');
 const Gpu = require ('./gpu');
 const Cpu = require ('./cpu');
 const {randomElement, shuffleArray} = require ('./core');

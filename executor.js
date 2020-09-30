@@ -1,3 +1,14 @@
+const {argv} = require ('process');
+
+const DEBUG = argv [2] === 'debug';
+
+if (DEBUG) {
+
+    console.log ({DEBUG});
+}
+
+const settings = require (DEBUG ? './debug-settings.json' : './settings.json');
+
 const net = require ('net');
 const settings = require ('./settings.json');
 const Task = require ('./task');
