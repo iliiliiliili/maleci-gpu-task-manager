@@ -12,21 +12,49 @@ const net = require ('net');
 const settings = require (DEBUG ? './debug-settings.json' : './settings.json');
 const Gpu = require ('./gpu');
 const Cpu = require ('./cpu');
-const {randomElement, shuffleArray} = require ('./core');
+const fs = require ('fs');
+const {randomElement, shuffleArray, remove} = require ('./core');
 // eslint-disable-next-line no-unused-vars
 const ComputationalUnit = require ('./computational-unit');
 const database = require ('./database');
 const repl = require ('repl');
 
+
 let workstations = [];
+let state = {
+
+    queue: [],
+    processingTasks: [],
+    finishedTasks: [],
+    lastTaskId: 0,
+};
 const delimiter = '\n\n\n\n';
-let lastTaskId = 0;
 const taskIdLoop = 260526052605;
+
+
+const loadState = () => {
+
+    if (fs.existsSync ('./state.json')) {
+
+        state = JSON.parse (fs.readFileSync ('./state.json'));
+        state.queue.forEach (a => Object.setPrototypeOf (a, Task.prototype));
+        state.processingTasks.forEach (a => Object.setPrototypeOf (a, Task.prototype));
+        state.finishedTasks.forEach (a => Object.setPrototypeOf (a, Task.prototype));
+    }
+};
+
+const saveState = () => {
+
+    fs.writeFileSync ('./state.json', JSON.stringify (state));
+};
+
+
+loadState ();
 
 const nextTaskId = () => {
 
-    lastTaskId = (lastTaskId + 1) % taskIdLoop;
-    return lastTaskId;
+    state.lastTaskId = (state.lastTaskId + 1) % taskIdLoop;
+    return state.lastTaskId;
 };
 
 /**
@@ -115,7 +143,10 @@ class Connection {
                     const onDone = this.doneCallbacks [data.taskId];
                     delete this.doneCallbacks [data.taskId];
 
-                    onDone (data.result, data.isError);
+                    if (onDone) {
+                    
+                        onDone (data.result, data.isError);
+                    }
                     
                 } else {
 
@@ -281,10 +312,10 @@ const server = net.createServer (socket => {
     });
 });
 
+server.on ('error', console.log);
+
 server.listen (settings.ports.server, '0.0.0.0');
 console.log ('Started server at port: ' + settings.ports.server);
-
-const queue = [];
 
 /**
  * @param {Task} task
@@ -330,26 +361,36 @@ const allocateResources = (task) => {
 
 processQueue = () => {
 
-    for (let i = 0; i < queue.length; i ++) {
+    for (let i = 0; i < state.queue.length; i ++) {
 
-        const task = queue [i];
+        const task = state.queue [i];
         const resources = allocateResources (task);
 
         if (resources === null) {
 
-            return;
+            continue;
         } else {
 
             console.log (task.taskId);
 
-            queue.splice (i, 1);
+            state.queue.splice (i, 1);
             i --;
 
             resources.forEach (a => a.registerProcess (task));
             
             const workstatonName = resources[0].workstation;
             const connection = connections [workstatonName];
+
+            state.processingTasks.push (task);
+
+            saveState ();
+
+            // eslint-disable-next-line no-loop-func
             connection.sendTask (task, resources, (result, isError) => {
+
+                remove (state.processingTasks, task);
+                state.finishedTasks.push (task);
+                saveState ();
 
                 resources.forEach (a => a.unregisterProcess (task));
 
@@ -360,29 +401,73 @@ processQueue = () => {
     }
 };
 
-const add = (user, workstaton, gpus, minimalGpuMemory, name, script, workdingDir, saveScreen) => {
+const add = (user, workstaton, gpus, minimalGpuMemory, name, script, workdingDir, saveScreen, logScreen) => {
       
     const task = new Task (
         nextTaskId (),
-        user, workstaton, gpus, minimalGpuMemory, name, script, workdingDir, saveScreen
+        user, workstaton, gpus, minimalGpuMemory, name, script, workdingDir, saveScreen, logScreen
     );
 
-    queue.push (
+    state.queue.push (
         task
     );
 
     console.log (task.toString ());
     processQueue ();
+
+    saveState ();
+
+    return task.toString ();
 };
 
 const showQueue = (user = null, log = console.log) => {
 
     const selectedQueue = user === null ?
-        queue : queue.filter (task => task.user === user);
+        state.queue : state.queue.filter (task => task.user === user);
 
-    log (selectedQueue.map (
+    const selectedProcessingTasks = user === null ?
+        state.processingTasks : state.processingTasks.filter (task => task.user === user);
+
+    const process = queue => queue.map (
         task => task.toString () + (user === null ? '' : ' script: ' + task.script)
-    ).join ('\n'));
+    ).join ('\n');
+
+    const text = 'Queue:\n'
+        + process (selectedQueue) + '\n\n'
+        + 'Processing tasks:\n'
+        + process (selectedProcessingTasks) + '\n\n';
+
+    log (text);
+};
+
+const showFinishedTasks = (user, log = console.log) => {
+
+    const selectedFinishedTasks = state.finishedTasks.filter (task => task.user === user);
+
+    const process = queue => queue.map (
+        task => task.toString () + (user === null ? '' : ' script: ' + task.script)
+    ).join ('\n');
+
+    const text = 'Finished tasks:\n'
+        + process (selectedFinishedTasks) + '\n\n';
+
+    log (text);
+};
+
+const clearFinishedTasks = (user, log = console.log) => {
+
+    state.finishedTasks = state.finishedTasks.filter (task => task.user !== user);
+
+    log ('Cleared');
+};
+
+const clearAllTasks = (user, log = console.log) => {
+
+    state.finishedTasks = state.finishedTasks.filter (task => task.user !== user);
+    state.queue = state.queue.filter (task => task.user !== user);
+    state.processingTasks = state.processingTasks.filter (task => task.user !== user);
+
+    log ('Cleared');
 };
 
 const createRepl = (socket) => {
@@ -390,7 +475,9 @@ const createRepl = (socket) => {
     const prompt = (user = 'no user') => `gtm::nodejs::${user}>`;
 
     let user = null;
+    let accessLevel = 0;
     const current = repl.start (prompt (), socket);
+    current.ignoreUndefined = true;
 
     const replLog = (data) => {
 
@@ -404,12 +491,42 @@ const createRepl = (socket) => {
     current.context.help = () => {
 
         replLog (`
-login: login(username, password)
-add task: add(workstaton, gpus, minimalGpuMemory, name, script, workdingDir, saveScreen = true)
-showQueue: showQueue(self = true)
-password: password(password) // changes password for current user
-createUser: createUser(username, password)
+login: login (username, password)
+logout: logout ()
+add task: add (workstaton, gpus, minimalGpuMemory, name, script, workdingDir, saveScreen = true, logScreen = true)
+show queue: showQueue (self = true)
+set password: setPassword (password)
+createUser: createUser (username, password, accessLevel = 1)
+set access level: setAccessLevel (username, newAccessLevel)
+show current workstations: workstations ()
+show finished tasks: showFinishedTasks ()
+clear finished tasks: clearFinishedTasks ()
+repeat task: repeatTask (taskId)
+clear all your tasks: clearAllTasks ()
         `);
+    };
+
+    const isLoggedIn = () => {
+        
+        if (user === null) {
+
+            replLog ('Login required (use login("username", "password"))');
+            return false;
+        } else {
+
+            return true;
+        }
+    };
+
+    const isGoodAccessLevel = (key) => {
+
+        if (accessLevel >= settings.accessLevels [key]) {
+
+            return true;
+        } else {
+
+            replLog (`Access level must be ${settings.accessLevels [key]} or higher (current is ${accessLevel})`);
+        }
     };
 
     current.context.help ();
@@ -429,20 +546,63 @@ createUser: createUser(username, password)
     );
 
     current.context.processQueue = processQueue;
-    current.context.add = (workstaton, gpus, minimalGpuMemory, name, script, workdingDir, saveScreen = true) => {
+    current.context.add = (workstaton, gpus, minimalGpuMemory, name, script, workdingDir, saveScreen = true, logScreen = true) => {
 
-        if (user === null) {
+        if (isLoggedIn () && isGoodAccessLevel ('addTask')) {
 
-            replLog ('Login required (use login(username, password))');
-        } else {
-
-            add (user, workstaton, gpus, minimalGpuMemory, name, script, workdingDir, saveScreen);
+            add (user, workstaton, gpus, minimalGpuMemory, name, script, workdingDir, saveScreen, logScreen);
         }
     };
     current.context.showQueue = (self = true) => {
         
         showQueue (self ? user : null, replLog);
     };
+
+    current.context.showFinishedTasks = () => {
+
+        if (isLoggedIn ()) {
+        
+            showFinishedTasks (user, replLog);
+        }
+    };
+
+    current.context.clearFinishedTasks = () => {
+
+        if (isLoggedIn ()) {
+        
+            clearFinishedTasks (user, replLog);
+        }
+    };
+
+    current.context.clearAllTasks = () => {
+
+        if (isLoggedIn () && isGoodAccessLevel ('createUser')) {
+
+            clearAllTasks (user, replLog);
+        }
+    };
+
+    current.context.repeatTask = (taskId) => {
+
+
+        if (isLoggedIn && isGoodAccessLevel ('addTask')) {
+
+            /** @type {Task} **/
+            const task = state.finishedTasks.find (a => a.taskId === taskId && a.user === user);
+
+            if (task) {
+
+                add (
+                    task.user, task.workstaton, task.gpus, task.minimalGpuMemory,
+                    task.name, task.script, task.workdingDir, task.saveScreen, task.logScreen
+                );
+            } else {
+
+                replLog (`No finished task with id ${taskId} for user ${user}`);
+            }
+        }
+    };
+
     current.context.queue = showQueue;
 
     current.context.login = (username, password) => {
@@ -450,25 +610,31 @@ createUser: createUser(username, password)
         database.login (username, password)
             .then (result => {
 
-                if (result === true) {
+                if (result.success === true) {
 
                     user = username;
+                    accessLevel = result.accessLevel;
                     
                     current.setPrompt (prompt (user));
                     replLog ('Logged in as: ' + user);
                 } else {
 
-                    replLog (result);
+                    replLog (result.error);
                 }
             });
     };
 
-    current.context.password = (password) => {
+    current.context.logout = () => {
 
-        if (user === null) {
+        user = null;
+        accessLevel = 0;
+        current.setPrompt (prompt ());
+        replLog ('Logged out');
+    };
 
-            console.log ('Login required (use login(username, password))');
-        } else {
+    current.context.setPassword = (password) => {
+
+        if (isLoggedIn ()) {
 
             database.password (user, password)
                 .then (result => {
@@ -483,15 +649,28 @@ createUser: createUser(username, password)
                 });
         }
     };
-    
-    current.context.createUser = (username, password) => {
-    
-        if (user === null) {
 
-            console.log ('Login required (use login(username, password))');
-        } else {
+    current.context.setAccessLevel = (username, newAccessLevel) => {
+        
+        if (isLoggedIn () && isGoodAccessLevel ('setAccessLevel')) {
 
-            database.createUser (username, password)
+            const result = database.setAccessLevel (username, newAccessLevel);
+
+            if (result === true) {
+    
+                replLog ('Updated accessLevel for: ' + username);
+            } else {
+
+                replLog (result);
+            }
+        }
+    };
+    
+    current.context.createUser = (username, password, accessLevel = 1) => {
+    
+        if (isLoggedIn () && isGoodAccessLevel ('createUser')) {
+
+            database.createUser (username, password, accessLevel)
                 .then (result => {
 
                     if (result === true) {
@@ -502,6 +681,22 @@ createUser: createUser(username, password)
                         replLog (result);
                     }
                 });
+        }
+    };
+
+    current.context.deleteUser = (username) => {
+
+        if (isLoggedIn () && isGoodAccessLevel ('createUser')) {
+
+            const result = database.deleteUser (username);
+
+            if (result === true) {
+
+                replLog ('Deleted user: ' + username);
+            } else {
+
+                replLog (result);
+            }
         }
     };
 
