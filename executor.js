@@ -10,7 +10,6 @@ if (DEBUG) {
 const settings = require (DEBUG ? './debug-settings.json' : './settings.json');
 
 const net = require ('net');
-const settings = require ('./settings.json');
 const Task = require ('./task');
 
 /** @type {'empty' | 'ready'} */
@@ -18,7 +17,6 @@ let state = 'empty';
 
 let messageBuffer = '';
 const delimiter = '\n\n\n\n';
-
 
 /**
  * @typedef {object} Message
@@ -35,10 +33,36 @@ const delimiter = '\n\n\n\n';
  * @property {boolean} [isError]
  */
 
+
+let isClientConnected = false;
+let unsentMessagesQueue = [];
+
 const client = new net.Socket ();
-client.connect (settings.ports.server, settings.ips.server, () => {
+
+client.on ('connect', () => {
+
+    isClientConnected = true;
     console.log ('Connected to: ' + settings.ips.server + ':' + settings.ports.server);
 });
+
+const connectClient = () => client.connect (settings.ports.server, settings.ips.server);
+
+client.on ('close', () => {
+
+    isClientConnected = false;
+    state = 'empty';
+    setTimeout (connectClient, 5000);
+
+    console.log ('Connection to server closed');
+});
+
+
+client.on ('error', (err) => {
+
+    console.log (err);
+});
+
+connectClient ();
 
 
 const processMessage = (dataString) => {
@@ -61,6 +85,9 @@ const processMessage = (dataString) => {
                     cpus: settings.cpus,
                     override: settings.overrideNewConnectionsFromSameWorkstation,
                 }) + delimiter);
+
+                unsentMessagesQueue.forEach (m => m ());
+                unsentMessagesQueue = [];
             }
             break;
 
@@ -103,7 +130,36 @@ const processMessage = (dataString) => {
                 //     }) + delimiter);
                 // };
 
-                task.execute (visibleDevices);
+                if (DEBUG) {
+
+                    setTimeout (() => {
+
+                        const message = () => {
+
+                            client.write (JSON.stringify ({
+                                command: 'TaskFinished',
+                                taskId: task.taskId,
+                            }) + delimiter);
+                        };
+
+                        console.log ({
+                            isClientConnected,
+                            unsentMessagesQueue,
+                        });
+                
+                        if (isClientConnected) {
+                
+                            message ();
+                        
+                        } else {
+                
+                            unsentMessagesQueue.push (message);
+                        }
+                    }, 4000);
+                } else {
+                
+                    task.execute (visibleDevices);
+                }
                 // .then (result => onDone (result, false))
                 // .catch (result => onDone (result, true));
             }
@@ -151,11 +207,22 @@ const server = net.createServer (socket => {
         const data = JSON.parse (dataBuffer.toString ());
 
         console.log ('Done', {tid: data.taskId});
+
+        const message = () => {
                     
-        client.write (JSON.stringify ({
-            command: 'TaskFinished',
-            taskId: data.taskId,
-        }) + delimiter);
+            client.write (JSON.stringify ({
+                command: 'TaskFinished',
+                taskId: data.taskId,
+            }) + delimiter);
+        };
+
+        if (isClientConnected) {
+
+            message ();
+        } else {
+
+            unsentMessagesQueue.push (message);
+        }
     });
 
     socket.on ('error', /** @param {{code: string}} error */ error => {
