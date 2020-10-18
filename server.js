@@ -31,12 +31,14 @@ let state = {
 const delimiter = '\n\n\n\n';
 const taskIdLoop = 260526052605;
 
+const stateFileName = DEBUG ? './debug.state.json' : './state.json';
+
 
 const loadState = () => {
 
-    if (fs.existsSync ('./state.json')) {
+    if (fs.existsSync (stateFileName)) {
 
-        state = JSON.parse (fs.readFileSync ('./state.json'));
+        state = JSON.parse (fs.readFileSync (stateFileName));
         state.queue.forEach (a => Object.setPrototypeOf (a, Task.prototype));
         state.processingTasks.forEach (a => Object.setPrototypeOf (a, Task.prototype));
         state.finishedTasks.forEach (a => Object.setPrototypeOf (a, Task.prototype));
@@ -45,7 +47,7 @@ const loadState = () => {
 
 const saveState = () => {
 
-    fs.writeFileSync ('./state.json', JSON.stringify (state));
+    fs.writeFileSync (stateFileName, JSON.stringify (state));
 };
 
 
