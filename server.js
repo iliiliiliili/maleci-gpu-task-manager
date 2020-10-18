@@ -490,6 +490,14 @@ const createRepl = (socket) => {
         current.prompt ();
     };
 
+    if (DEBUG) {
+
+        current.context.dadd = () => {
+
+            current.context.add ('monster', 0, 0, 'debug', 'whoami', '~', true, true, 1);
+        };
+    }
+
     current.context.help = () => {
 
         replLog (`
