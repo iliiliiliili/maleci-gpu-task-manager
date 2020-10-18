@@ -12,7 +12,7 @@ const settings = require (DEBUG ? './debug-settings.json' : './settings.json');
 
 class Task {
 
-    constructor (taskId, user, workstaton, gpus, minimalGpuMemory, name, script, workdingDir, saveScreen = true, logScreen = true) {
+    constructor (taskId, user, workstaton, gpus, minimalGpuMemory, name, script, workdingDir, saveScreen = true, logScreen = true, priorityValue = 0) {
         
         this.taskId = taskId;
         this.user = user;
@@ -24,6 +24,12 @@ class Task {
         this.workdingDir = workdingDir;
         this.saveScreen = saveScreen;
         this.logScreen = logScreen;
+        this.priorityValue = priorityValue;
+    }
+
+    get priority () {
+
+        return this.priorityValue || 0;
     }
 
     describe () {
@@ -39,6 +45,7 @@ class Task {
             script: this.script,
             workdingDir: this.workdingDir,
             saveScreen: this.saveScreen,
+            priorityValue: this.priority,
         };
     }
 

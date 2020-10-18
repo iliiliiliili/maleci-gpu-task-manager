@@ -363,6 +363,8 @@ const allocateResources = (task) => {
 
 processQueue = () => {
 
+    state.queue.sort ((a, b) => b.priority - a.priority);
+
     for (let i = 0; i < state.queue.length; i ++) {
 
         const task = state.queue [i];
@@ -403,11 +405,12 @@ processQueue = () => {
     }
 };
 
-const add = (user, workstaton, gpus, minimalGpuMemory, name, script, workdingDir, saveScreen, logScreen) => {
+const add = (user, workstaton, gpus, minimalGpuMemory, name, script, workdingDir, saveScreen, logScreen, priorityValue) => {
       
     const task = new Task (
         nextTaskId (),
-        user, workstaton, gpus, minimalGpuMemory, name, script, workdingDir, saveScreen, logScreen
+        user, workstaton, gpus, minimalGpuMemory, name, script, workdingDir, saveScreen, logScreen,
+        priorityValue
     );
 
     state.queue.push (
@@ -556,11 +559,11 @@ clear all your tasks: clearAllTasks ()
     );
 
     current.context.processQueue = processQueue;
-    current.context.add = (workstaton, gpus, minimalGpuMemory, name, script, workdingDir, saveScreen = true, logScreen = true) => {
+    current.context.add = (workstaton, gpus, minimalGpuMemory, name, script, workdingDir, saveScreen = true, logScreen = true, priorityValue = 0) => {
 
         if (isLoggedIn () && isGoodAccessLevel ('addTask')) {
 
-            add (user, workstaton, gpus, minimalGpuMemory, name, script, workdingDir, saveScreen, logScreen);
+            add (user, workstaton, gpus, minimalGpuMemory, name, script, workdingDir, saveScreen, logScreen, priorityValue);
         }
     };
     current.context.showQueue = (self = true) => {
