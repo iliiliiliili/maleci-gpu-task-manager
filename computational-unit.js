@@ -1,9 +1,8 @@
-const {remove} = require ('./core');
+import { remove } from './core.js';
 
-class ComputationalUnit {
+export default class ComputationalUnit {
 
     constructor (type, id, workstation, processes = [], maxProcesses = 1) {
-
         this.type = type;
         this.id = id;
         this.workstation = workstation;
@@ -11,15 +10,12 @@ class ComputationalUnit {
         this.maxProcesses = maxProcesses;
     }
 
-    isFree () {
-
+    isFree() {
         return this.maxProcesses > this.processes.length;
     }
     
-    registerProcess (task) {
-
+    registerProcess(task) {
         if (!this.isFree ()) {
-
             console.error ('ComputationalUnit is not free when trying to register new process: ');
             console.error (this);
         }
@@ -27,10 +23,8 @@ class ComputationalUnit {
         this.processes.push (task);
     }
 
-    unregisterProcess (task) {
-
+    unregisterProcess(task) {
         if (!this.processes.includes (task)) {
-
             console.error ('ComputationalUnit had no selected process: ');
             console.error (this);
             console.error (task);
@@ -39,5 +33,3 @@ class ComputationalUnit {
         remove (this.processes, task);
     }
 }
-
-module.exports = ComputationalUnit;

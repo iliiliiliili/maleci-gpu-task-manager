@@ -1,16 +1,21 @@
-const {argv} = require ('process');
+// TODO implement DEBUG if needed
+// import {argv} from 'process';
 
-const DEBUG = argv [2] === 'debug';
+// const DEBUG = argv [2] === 'debug';
 
-if (DEBUG) {
+// if (DEBUG) {
+//     console.log({DEBUG});
+// }
 
-    console.log ({DEBUG});
-}
+// import debugSettings from './debug-settings.json' assert { type: 'json' };
+import commonSettings from './settings.json' assert { type: 'json' };
 
-const settings = require (DEBUG ? './debug-settings.json' : './settings.json');
+// TODO implement DEBUG if needed
+// const settings = DEBUG ? debugSettings : commonSettings;
+const settings = commonSettings;
 
-const net = require ('net');
-const Task = require ('./task');
+import net from 'net';
+import  Task  from './task.js';
 
 /** @type {'empty' | 'ready'} */
 let state = 'empty';
@@ -39,30 +44,28 @@ let unsentMessagesQueue = [];
 
 const client = new net.Socket ();
 
-client.on ('connect', () => {
-
+client.on('connect', () => {
     isClientConnected = true;
-    console.log ('Connected to: ' + settings.ips.server + ':' + settings.ports.server);
+    console.log('Connected to: ' + settings.ips.server + ':' + settings.ports.server);
 });
 
-const connectClient = () => client.connect (settings.ports.server, settings.ips.server);
+const connectClient = () => client.connect(settings.ports.server, settings.ips.server);
 
-client.on ('close', () => {
+client.on('close', () => {
 
     isClientConnected = false;
     state = 'empty';
-    setTimeout (connectClient, 5000);
+    setTimeout(connectClient, 5000);
 
-    console.log ('Connection to server closed');
+    console.log('Connection to server closed');
 });
 
 
-client.on ('error', (err) => {
-
-    console.log (err);
+client.on('error', (err) => {
+    console.log(err);
 });
 
-connectClient ();
+connectClient();
 
 
 const processMessage = (dataString) => {
@@ -73,10 +76,8 @@ const processMessage = (dataString) => {
     console.log (data.command);
 
     switch (state) {
-
         case 'empty':
             if (data.command === 'Hello') {
-
                 state = 'ready';
                 client.write (JSON.stringify ({
                     command: 'Hello',
@@ -90,10 +91,8 @@ const processMessage = (dataString) => {
                 unsentMessagesQueue = [];
             }
             break;
-
         case 'ready': {
             if (data.command === 'Process') {
-
                 console.log (data.task.taskId);
 
                 const resources = data.resources;
@@ -102,7 +101,6 @@ const processMessage = (dataString) => {
                 gpus.sort ();
 
                 const visibleDevices = gpus.join (',');
-                
 
                 console.log ({visibleDevices});
 
@@ -118,6 +116,7 @@ const processMessage = (dataString) => {
                     data.task.saveScreen,
                 );
 
+                // TODO implement task done status handler
                 // const onDone = (result, isError) => {
                     
                 //     console.log ('Done', {tid: task.taskId, result, isError});
@@ -130,36 +129,31 @@ const processMessage = (dataString) => {
                 //     }) + delimiter);
                 // };
 
-                if (DEBUG) {
+                // TODO implement debug if needed
+                // if (DEBUG) {
+                //     setTimeout (() => {
+                //         const message = () => {
+                //             client.write (JSON.stringify ({
+                //                 command: 'TaskFinished',
+                //                 taskId: task.taskId,
+                //             }) + delimiter);
+                //         };
 
-                    setTimeout (() => {
-
-                        const message = () => {
-
-                            client.write (JSON.stringify ({
-                                command: 'TaskFinished',
-                                taskId: task.taskId,
-                            }) + delimiter);
-                        };
-
-                        console.log ({
-                            isClientConnected,
-                            unsentMessagesQueue,
-                        });
+                //         console.log ({
+                //             isClientConnected,
+                //             unsentMessagesQueue,
+                //         });
                 
-                        if (isClientConnected) {
-                
-                            message ();
-                        
-                        } else {
-                
-                            unsentMessagesQueue.push (message);
-                        }
-                    }, 4000);
-                } else {
-                
+                //         if (isClientConnected) {
+                //             message ();
+                //         } else {
+                //             unsentMessagesQueue.push (message);
+                //         }
+                //     }, 4000);
+                // } else {
                     task.execute (visibleDevices);
-                }
+                // }
+                // TODO implement task done status handler
                 // .then (result => onDone (result, false))
                 // .catch (result => onDone (result, true));
             }
@@ -170,14 +164,11 @@ const processMessage = (dataString) => {
     }
 };
 
-
 client.on ('data', (dataBuffer) => {
-
     const dataString = messageBuffer + dataBuffer.toString ();
     let index = 0;
 
     while (dataString.includes (delimiter, index)) {
-
         const endIndex = dataString.indexOf (delimiter, index);
         const message = dataString.substring (index, endIndex);
 
@@ -187,29 +178,23 @@ client.on ('data', (dataBuffer) => {
     }
 
     if (index < dataString.length) {
-
         messageBuffer = dataString.substring (index);
     } else {
-
         messageBuffer = '';
     }
 });
 
 client.on ('close', () => {
-
     console.log ('Connection closed');
 });
 
 const server = net.createServer (socket => {
-
     socket.on ('data', dataBuffer => {
-
         const data = JSON.parse (dataBuffer.toString ());
 
         console.log ('Done', {tid: data.taskId});
 
-        const message = () => {
-                    
+        const message = () => {  
             client.write (JSON.stringify ({
                 command: 'TaskFinished',
                 taskId: data.taskId,
@@ -217,16 +202,13 @@ const server = net.createServer (socket => {
         };
 
         if (isClientConnected) {
-
             message ();
         } else {
-
             unsentMessagesQueue.push (message);
         }
     });
 
     socket.on ('error', /** @param {{code: string}} error */ error => {
-        
         switch (error.code) {
             case 'ECONNRESET':
                 break;

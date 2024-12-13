@@ -1,0 +1,34 @@
+@startuml
+left to right direction
+
+class Router {
+    +post(endpoint: string, handler: function)
+}
+
+class TokenService {
+    +checkToken(token: string): TokenStatus
+}
+
+class AccessService {
+    +getAccessLevel(username: string): int
+}
+
+class QueueService {
+    +showQueue(username: string, log: function)
+    +showFinishedTasks(username: string, log: function)
+}
+
+class TokenStatus {
+    +username: User
+    +success: boolean
+}
+
+class User {
+    +login: string
+}
+
+Router -> TokenService: uses
+Router -> AccessService: uses
+Router -> QueueService: uses
+TokenStatus -> User: contains
+@enduml

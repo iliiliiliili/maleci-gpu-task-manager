@@ -3,16 +3,23 @@
   "version": "0.1.0",
   "description": "Allows to queue gpu tasks and run them when resources are free",
   "main": "main.js",
-  "scripts": {},
+  "type": "module",
+  "scripts": {
+    "start": "sudo \"$(which node)\" server.js",
+    "executor": "sudo \"$(which node)\" executor.js",
+    "test": "sudo \"$(which node)\" ./runAllTests.js"
+  },
   "keywords": [
     "gpu",
     "task runner",
     "maleci"
   ],
-  "author": "Illia Oleksiienko <io@eng.au.dk>",
+  "author": "Nikita Lazarenko <lazarenkonikita1993@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "bcrypt": "^5.0.0"
+    "bcrypt": "^5.1.1",
+    "body-parser": "^1.20.2",
+    "express": "^4.19.2"
   },
   "devDependencies": {
     "eslint": "^6.8.0",

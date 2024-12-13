@@ -25,5 +25,20 @@
             "maxProcesses": 10
         }
     ],
-    "overrideNewConnectionsFromSameWorkstation": true
+    "overrideNewConnectionsFromSameWorkstation": true,
+    "accessLevels": {
+        "login": 1,
+        "logout": 1,
+        "help": 1,
+        "addTask": 2,
+        "showQueue": 2,
+        "showFinishedTasks": 2,
+        "clearFinishedTasks": 2,
+        "clearAllTasks": 2,
+        "repeatTask": 2,
+        "setPassword": 2,
+        "createUser": 3,
+        "deleteUser": 3,
+        "setAccessLevel": 4
+    }
 }

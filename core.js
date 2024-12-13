@@ -1,7 +1,7 @@
-const {inspect} = require ('util');
-const fs = require ('fs');
+import { inspect } from 'util';
+import fs from 'fs';
 
-const prettyPrint = (obj, useColors = true) => inspect (obj, false, null, useColors);
+export const prettyPrint = (obj, useColors = true) => inspect (obj, false, null, useColors);
 
 /**
  * Returns random integer from `minValue` inclusive to
@@ -9,7 +9,7 @@ const prettyPrint = (obj, useColors = true) => inspect (obj, false, null, useCol
  * @param {number} minValue
  * @param {number} maxValue
  */
-const randomInt = (minValue, maxValue) => minValue + Math.floor (Math.random () * (maxValue - minValue));
+export const randomInt = (minValue, maxValue) => minValue + Math.floor (Math.random () * (maxValue - minValue));
 
 /**
  * Select random element from `values`
@@ -17,16 +17,13 @@ const randomInt = (minValue, maxValue) => minValue + Math.floor (Math.random () 
  * @param {Array<T>} values
  * @returns {T}
  */
-const randomElement = (values) => {
-
+export const randomElement = (values) => {
     const index = randomInt (0, values.length);
-
     return values [index];
 };
 
-const shuffleArray = (array) => {
+export const shuffleArray = (array) => {
     for (let i = array.length - 1; i > 0; i --) {
-
         const j = Math.floor (Math.random () * (i + 1));
         [array[i], array[j]] = [array[j], array[i]];
     }
@@ -38,12 +35,10 @@ const shuffleArray = (array) => {
  * @param {T} value
  * @returns {boolean} is element has been deleted
  */
-const remove = (array, value) => {
-
+export const remove = (array, value) => {
     const index = array.indexOf (value);
     
     if (index > -1) {
-
         array.splice (index, 1);
         return true;
     }
@@ -51,30 +46,17 @@ const remove = (array, value) => {
     return false;
 };
 
-const saveAsJson = (fileName, data) => {
-
+export const saveAsJson = (fileName, data) => {
     fs.writeFileSync (fileName, JSON.stringify (data));
 };
 
-const read = (fileName) => fs.readFileSync (fileName, 'utf8');
+export const read = (fileName) => fs.readFileSync (fileName, 'utf8');
 
-const readAsJson = (fileName) => {
-
+export const readAsJson = (fileName) => {
     if (fs.existsSync (fileName)) {
 
         return JSON.parse (read (fileName));
     }
 
     return null;
-};
-
-module.exports = {
-    
-    randomInt,
-    randomElement,
-    shuffleArray,
-    remove,
-    prettyPrint,
-    readAsJson,
-    saveAsJson,
 };

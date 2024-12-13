@@ -1,19 +1,21 @@
-const {argv} = require ('process');
+// TODO implement DEBUG if needed
+// import {argv} from 'process';
 
-const DEBUG = argv [2] === 'debug';
+// const DEBUG = argv [2] === 'debug';
 
-if (DEBUG) {
+// if (DEBUG) {
+//     console.log({DEBUG});
+// }
 
-    console.log ({DEBUG});
-}
+// import debugSettings from './debug-settings.json' assert { type: 'json' };
+import commonSettings from './settings.json' assert { type: 'json' };
 
-const {execSync, spawn} = require ('child_process');
-const settings = require (DEBUG ? './debug-settings.json' : './settings.json');
+// TODO implement DEBUG if needed
+// const settings = DEBUG ? debugSettings : commonSettings;
+const settings = commonSettings;
 
-class Task {
-
-    constructor (taskId, user, workstaton, gpus, minimalGpuMemory, name, script, workdingDir, saveScreen = true, logScreen = true, priorityValue = 0) {
-        
+export default class Task {
+    constructor(taskId, user, workstaton, gpus, minimalGpuMemory, name, script, workdingDir, saveScreen = true, logScreen = true, priorityValue = 0) {
         this.taskId = taskId;
         this.user = user;
         this.workstaton = workstaton;
@@ -27,15 +29,12 @@ class Task {
         this.priorityValue = priorityValue;
     }
 
-    get priority () {
-
+    get priority() {
         return this.priorityValue || 0;
     }
 
-    describe () {
-
+    describe() {
         return {
-
             taskId: this.taskId,
             user: this.user,
             workstaton: this.workstaton,
@@ -49,13 +48,11 @@ class Task {
         };
     }
 
-    async execute (visibleDevices) {
+    async execute(visibleDevices) {
+        console.log('Execute ', this.taskId);
 
-        console.log ('Execute ', this.taskId);
-
-        return new Promise ((resolve) => {
-
-            const uid = parseInt (execSync ('id -u root') + '');
+        return new Promise((resolve) => {
+            const uid = parseInt(execSync ('id -u root') + '');
 
             const args = [
                 '-l', this.user, '-c',
@@ -66,26 +63,23 @@ class Task {
             ];
 
 
-            const process = spawn ('runuser', args, {
+            const process = spawn('runuser', args, {
                 uid,
             });
 
-            console.log (args);
+            console.log(args);
 
-            process.stdout.on ('data', (d) => console.log ('out: ' + d));
-            process.stderr.on ('data', (d) => console.log ('err: ' + d));
-            process.on ('close', () => {
+            process.stdout.on('data', (d) => console.log('out: ' + d));
+            process.stderr.on('data', (d) => console.log('err: ' + d));
+            process.on('close', () => {
 
-                console.log ('started: ' + this.name);
-                resolve ();
+                console.log('started: ' + this.name);
+                resolve();
             });
         });
     }
 
-    toString () {
-        
+    toString() {
         return this.user + '::' + this.workstaton + '::' + this.name + ' #' + this.taskId + ` (${this.gpus} gpus)`;
     }
 }
-
-module.exports = Task;

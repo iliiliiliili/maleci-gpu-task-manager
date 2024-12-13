@@ -1,11 +1,7 @@
-const ComputationalUnit = require ('./computational-unit');
+import ComputationalUnit from './computational-unit.js';
 
-class Cpu extends ComputationalUnit {
-
+export default class Cpu extends ComputationalUnit {
     constructor (id, workstation, processes = [], maxProcesses = 10) {
-
         super ('cpu', id, workstation, processes, maxProcesses);
     }
 }
-
-module.exports = Cpu;

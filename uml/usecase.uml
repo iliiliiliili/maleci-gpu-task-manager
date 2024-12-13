@@ -1,0 +1,38 @@
+@startuml
+left to right direction
+
+actor "User level 1" as user
+actor "User level 2" as userType2
+actor "User level 3" as admin
+actor "User level 4" as superadmin
+
+rectangle "User Functions" as userFunctions {
+    user -> (login)
+    user -> (logout)
+    user -> (help)
+}
+
+rectangle "Task Management" as taskManagement {
+    userType2 -> (addTask)
+    userType2 -> (showQueue)
+    userType2 -> (showFinishedTasks)
+    userType2 -> (clearFinishedTasks)
+    userType2 -> (clearAllTasks)
+    userType2 -> (repeatTask)
+    userType2 -> (workstations)
+}
+
+rectangle "Admin Functions" as adminFunctions {
+    admin -> (createUser)
+    admin -> (deleteUser)
+}
+
+rectangle "SuperAdmin Functions" as superadminFunctions {
+    superadmin -> (setPassword)
+    superadmin -> (setAccessLevel)
+}
+
+userFunctions -[hidden]-> taskManagement
+taskManagement -[hidden]-> adminFunctions
+adminFunctions -[hidden]-> superadminFunctions
+@enduml

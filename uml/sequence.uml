@@ -1,0 +1,69 @@
+@startuml
+actor User
+participant Router
+participant TokenService
+participant AccessService
+participant QueueService
+participant UserService
+participant HelpService
+
+User -> Router: POST /help
+Router -> HelpService: help()
+HelpService -> Router: helpText
+Router -> User: JSON { result: helpText, error: null }
+
+User -> Router: POST /login
+Router -> TokenService: checkToken(token)
+TokenService -> Router: tokenStatus
+Router -> AccessService: getAccessLevel(username)
+AccessService -> Router: accessLevel
+alt tokenStatus.success && isGoodAccessLevel('login', accessLevel)
+    Router -> User: JSON { result: 'Login successful', error: null }
+else
+    Router -> User: JSON { result: null, error: 'Access denied' }
+end
+
+User -> Router: POST /addTask
+Router -> TokenService: checkToken(token)
+TokenService -> Router: tokenStatus
+Router -> AccessService: getAccessLevel(username)
+AccessService -> Router: accessLevel
+alt tokenStatus.success && isGoodAccessLevel('addTask', accessLevel)
+    Router -> QueueService: addTask(taskDetails)
+    QueueService -> Router: taskAdded
+    Router -> User: JSON { result: 'Task added', error: null }
+else
+    Router -> User: JSON { result: null, error: 'Access denied' }
+end
+
+User -> Router: POST /repeatTask
+Router -> TokenService: checkToken(token)
+TokenService -> Router: tokenStatus
+Router -> AccessService: getAccessLevel(username)
+AccessService -> Router: accessLevel
+alt tokenStatus.success && isGoodAccessLevel('repeatTask', accessLevel)
+    Router -> QueueService: repeatTask(taskId)
+    QueueService -> Router: taskRepeated
+    Router -> User: JSON { result: 'Task repeated', error: null }
+else
+    Router -> User: JSON { result: null, error: 'Access denied' }
+end
+
+User -> Router: POST /showFinishedTasks
+Router -> TokenService: checkToken(token)
+TokenService -> Router: tokenStatus
+Router -> AccessService: getAccessLevel(username)
+AccessService -> Router: accessLevel
+alt tokenStatus.success && isGoodAccessLevel('showFinishedTasks', accessLevel)
+    Router -> QueueService: showFinishedTasks(username)
+    QueueService -> Router: finishedTasks
+    Router -> User: JSON { result: finishedTasks, error: null }
+else
+    Router -> User: JSON { result: null, error: 'Access denied' }
+end
+
+User -> Router: POST /logout
+Router -> TokenService: invalidateToken(token)
+TokenService -> Router: tokenInvalidated
+Router -> User: JSON { result: 'Logout successful', error: null }
+@enduml
