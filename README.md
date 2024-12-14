@@ -11,7 +11,8 @@ How to launch
     * in Windows Firewall open port of this project's http-server;
     * in cmd run as admin: ```netsh interface portproxy add v4tov4 listenaddress=0.0.0.0 listenport=2604 connectaddress=172.25.141.66 connectport=2604``` (command for port 2604)
 * in console run: ```npm install```
-* in console run: ```sudo "$(which node)" server.js```
+* in console run: ```npm run install-gui```
+* in console run: ```npm run start```
 * in the same directory but in another console run:
     ```sudo "$(which node)" executor.js```
 

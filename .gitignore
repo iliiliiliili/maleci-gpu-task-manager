@@ -6,3 +6,5 @@ scripts
 debug.*
 *.state.json
 .vscode
+gui/node_modules
+gui/build

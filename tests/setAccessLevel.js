@@ -4,7 +4,7 @@ import chalk from 'chalk';
 import database from '../database.js';
 
 const username = 'farund2007';
-const newAccessLevel = 7;
+const newAccessLevel = 4;
 
 const runSetAccessLevelTests = async () => {
     // Failure test (example: using invalid token)

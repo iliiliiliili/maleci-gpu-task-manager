@@ -5,7 +5,9 @@
   "main": "main.js",
   "type": "module",
   "scripts": {
-    "start": "sudo \"$(which node)\" server.js",
+    "install-gui": "cd gui && npm install && cd ..",
+    "start-gui": "cd gui && npm start",
+    "start": "cd gui && npm run build && cd .. && sudo \"$(which node)\" server.js",
     "executor": "sudo \"$(which node)\" executor.js",
     "test": "sudo \"$(which node)\" ./runAllTests.js"
   },
@@ -19,7 +21,9 @@
   "dependencies": {
     "bcrypt": "^5.1.1",
     "body-parser": "^1.20.2",
-    "express": "^4.19.2"
+    "express": "^4.19.2",
+    "open": "^10.1.0",
+    "serve-static": "^1.16.2"
   },
   "devDependencies": {
     "eslint": "^6.8.0",
