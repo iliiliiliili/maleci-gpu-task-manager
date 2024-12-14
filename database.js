@@ -51,6 +51,18 @@ export const login = async(username, password, keyWord) => {
     }
 };
 
+// for logout
+export const invalidateToken = (token) => {
+    for (const user of database.users) {
+        if (user.token === token) {
+            user.token = null;
+            updateDatabase();
+            return { success: true };
+        }
+    }
+    return { success: false };
+};
+
 export const checkToken = async (token) => {
     let user = undefined;
     for (const knownUser of database.users) {
@@ -60,7 +72,7 @@ export const checkToken = async (token) => {
         }
     }
 
-    if (user === undefined) {
+    if (user === undefined || user.token === null) {
         return {
             success: false,
             error: 'Unknown token'

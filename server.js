@@ -17,7 +17,6 @@ const settings = commonSettings;
 import net from 'net';
 import { processQueue } from './server-core.js';
 
-import { workstations } from './server-core.js';
 import { connections } from './server-core.js';
 
 import Gpu from './gpu.js';
@@ -36,6 +35,7 @@ app.use('/', restRoutes);
 
 
 const delimiter = '\n\n\n\n';
+let workstations = [];
 
 app.listen(port, '0.0.0.0', () => {
     console.log(`REST API Server listening on port ${port}`);
