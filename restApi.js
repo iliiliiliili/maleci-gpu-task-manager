@@ -2,7 +2,7 @@ import {login, checkToken, getAccessLevel, createUser, setPassword, setAccessLev
 import express from 'express';
 import {isGoodAccessLevel, addTask, showQueue, showFinishedTasks, clearFinishedTasks, clearAllTasks} from './server-core.js';
 import state from './server-core.js';
-import { workstations } from './server-core.js';
+import { externalState } from './server-core.js';
 
 const router = express.Router();
 
@@ -34,7 +34,7 @@ router.post('/logout', async (req, res) => {
         if (tokenStatus.success && isGoodAccessLevel('logout', getAccessLevel(username))) {
             const invalidateTokenStatus = invalidateToken(token);
             if (invalidateTokenStatus.success) {
-                res.json({ result: 'Logged out', error: null });
+                res.json({ result: invalidateTokenStatus.success, error: null });
             } else {
                 res.status(400).json({ result: null, error: 'Unknown token' });
             }
@@ -286,7 +286,7 @@ router.post('/deleteUser', async (req, res) => {
 });
 
 router.post('/workstations', (req, res) => {
-    const result = workstations.map (a => ({
+    const result = externalState.workstations.map (a => ({
         name: a.name,
         'gpus-shared': a.gpus.shared.map (
             gpu => `id: ${gpu.id}, memory: ${gpu.memory}, processes: ${gpu.processes.length}, maxProcesses: ${gpu.maxProcesses}`

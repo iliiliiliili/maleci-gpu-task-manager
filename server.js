@@ -27,6 +27,7 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import restRoutes from './restApi.js';
 import cors from 'cors';
+import { externalState } from './server-core.js';
 
 const app = express();
 const port = 2604;
@@ -38,7 +39,6 @@ app.use('/', restRoutes);
 
 
 const delimiter = '\n\n\n\n';
-let workstations = [];
 
 app.listen(port, '0.0.0.0', () => {
     console.log(`REST API Server listening on port ${port}`);
@@ -209,7 +209,7 @@ const server = net.createServer(socket => {
 
                 const oldConnection = connections[connection.name];
 
-                workstations = workstations.filter(
+                externalState.workstations = externalState.workstations.filter(
                     a => a.name !== oldConnection.name
                 );
 
@@ -227,7 +227,7 @@ const server = net.createServer(socket => {
             log(connection.name + ' ready');
         }
 
-        workstations.push({
+        externalState.workstations.push({
             name: connection.name,
             gpus: {
                 shared: connection.gpus.map(
@@ -240,8 +240,8 @@ const server = net.createServer(socket => {
             )
         });
 
-        console.log(workstations);
-        console.log(workstations.length);
+        console.log(externalState.workstations);
+        console.log(externalState.workstations.length);
 
         processQueue();
     };
@@ -254,12 +254,12 @@ const server = net.createServer(socket => {
 
     const close = () => {
 
-        workstations = workstations.filter(
+        externalState.workstations = externalState.workstations.filter(
             a => a.name !== connection.name
         );
 
-        console.log(workstations);
-        console.log(workstations.length);
+        console.log(externalState.workstations);
+        console.log(externalState.workstations.length);
 
         log('Closed ' + address);
     };

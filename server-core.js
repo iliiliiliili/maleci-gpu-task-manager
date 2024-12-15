@@ -18,7 +18,7 @@ import fs from 'fs';
 import {randomElement, shuffleArray, remove} from './core.js';
 
 
-export const workstations = [];
+export const externalState = { workstations: [] };
 export const connections = {};
 let state = {
     queue: [],
@@ -72,7 +72,7 @@ const nextTaskId = () => {
  */
 const allocateResources =(task) => {
     const selectedWorkstations = task.workstaton === 'any' ?
-        workstations : workstations.filter(a => task.workstaton.includes(a.name));
+        externalState.workstations : externalState.workstations.filter(a => task.workstaton.includes(a.name));
 
     if (task.gpus <= 0) {
         const freeCpus =[].concat(
