@@ -26,9 +26,12 @@ import ComputationalUnit from './computational-unit.js';
 import express from 'express';
 import bodyParser from 'body-parser';
 import restRoutes from './restApi.js';
+import cors from 'cors';
 
 const app = express();
 const port = 2604;
+
+app.use(cors());
 
 app.use(bodyParser.json());
 app.use('/', restRoutes);
