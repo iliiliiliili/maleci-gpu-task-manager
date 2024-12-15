@@ -12,6 +12,7 @@ import commonSettings from './settings.json' assert { type: 'json' };
 
 // TODO implement DEBUG if needed
 // const settings = DEBUG ? debugSettings : commonSettings;
+import { execSync, spawn } from 'child_process';
 const settings = commonSettings;
 
 export default class Task {
