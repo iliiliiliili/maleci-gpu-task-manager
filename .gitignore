@@ -6,3 +6,4 @@ scripts
 debug.*
 *.state.json
 .vscode
+settings.json
