@@ -11,7 +11,7 @@ const runCreateUserTests = async () => {
     // Failure test (invalid token)
     try {
         console.log('Running failure test for /createUser endpoint (invalid token)');
-        const response = await fetch('http://127.0.0.1:2604/createUser', {
+        const response = await fetch('http://127.0.0.1:2604/api/createUser', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -34,7 +34,7 @@ const runCreateUserTests = async () => {
     // Success test
     try {
         console.log('Running success test for /createUser endpoint');
-        const response = await fetch('http://127.0.0.1:2604/createUser', {
+        const response = await fetch('http://127.0.0.1:2604/api/createUser', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

@@ -6,7 +6,7 @@ const runWorkstationsTests = async () => {
     // Failure test (sending unexpected body data)
     try {
         console.log('Running failure test for /workstations endpoint (unexpected data)');
-        const response = await fetch('http://127.0.0.1:2604/workstations', {
+        const response = await fetch('http://127.0.0.1:2604/api/workstations', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -26,7 +26,7 @@ const runWorkstationsTests = async () => {
     // Success test
     try {
         console.log('Running success test for /workstations endpoint');
-        const response = await fetch('http://127.0.0.1:2604/workstations', {
+        const response = await fetch('http://127.0.0.1:2604/api/workstations', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

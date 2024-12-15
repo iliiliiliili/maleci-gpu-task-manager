@@ -26,9 +26,12 @@ import bodyParser from 'body-parser';
 import path from 'path';
 import restRoutes from './restApi.js';
 import open from 'open';
+import cors from 'cors';
 
 const app = express();
 const port = 2604;
+
+app.use(cors());
 
 // Serve static files from the React app build directory
 const buildPath = path.join(path.resolve(), 'gui/build');

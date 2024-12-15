@@ -1,9 +1,10 @@
 // src/App.js
 import React, { useState } from "react";
-import AddExperimentModal from "./AddExperimentModal"; // Імпортуємо новий компонент
+import AddExperimentModal from "./AddExperimentModal";
+import Cookies from "js-cookie";
 
 function App() {
-  const username = "farund2007";
+  const username = Cookies.get("username");
 
   const [experiments, setExperiments] = useState([
     {
