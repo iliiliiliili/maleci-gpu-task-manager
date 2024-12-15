@@ -170,10 +170,10 @@ export const showQueue = (user = null, log = console.log) => {
         task => task.toString() + (user === null ? '' : ' script: ' + task.script)
     ).join('\n');
 
-    const text = 'Queue:\n'
-        + process(selectedQueue) + '\n\n'
-        + 'Processing tasks:\n'
-        + process(selectedProcessingTasks) + '\n\n';
+    const text = ''
+        + process(selectedQueue) 
+        // + 'Processing tasks:'
+        + process(selectedProcessingTasks);
 
     log(text);
 };
@@ -185,8 +185,8 @@ export const showFinishedTasks = (user, log = console.log) => {
         task => task.toString() + (user === null ? '' : ' script: ' + task.script)
     ).join('\n');
 
-    const text = 'Finished tasks:\n'
-        + process(selectedFinishedTasks) + '\n\n';
+    const text = ''
+        + process(selectedFinishedTasks) + '';
 
     log(text);
 };
