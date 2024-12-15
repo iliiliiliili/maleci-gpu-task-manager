@@ -16,7 +16,7 @@ router.post('/login', (req, res) => {
         .then(result => {
             console.log('RESULT')
             console.log(result)
-            res.json({ result: result.isSuccess, error: result.error, token: result.token });
+            res.json({ result: `success: ${JSON.stringify(result.isSuccess)}`, error: result.error, token: result.token });
         });
     }
     catch (error) {

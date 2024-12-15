@@ -1,36 +1,14 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Cookies from "js-cookie";
 
 function Login() {
   const [login, setLogin] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-  const handleLogin = async () => {
+  const handleLogin = () => {
     if (login.trim() && password.trim()) {
-      try {
-        const response = await fetch("http://127.0.0.1:2604/api/login", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ username: login, password: password }),
-        });
-
-        const data = await response.json();
-
-        if ((data.result)) {
-          Cookies.set("token", data.token);
-          Cookies.set("username", login);
-          navigate("/app");
-        } else {
-          alert(data.message);
-        }
-      } catch (error) {
-        console.error("Error logging in:", error);
-        alert("An error occurred. Please try again.");
-      }
+      navigate("/app"); // Navigate to the main app
     } else {
       alert("Please enter both login and password.");
     }

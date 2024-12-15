@@ -9,7 +9,7 @@ const runRepeatTaskTests = async () => {
     // Failure test (example: using invalid token)
     try {
         console.log('Running failure test for /repeatTask endpoint (invalid token)');
-        const response = await fetch('http://127.0.0.1:2604/api/repeatTask', {
+        const response = await fetch('http://127.0.0.1:2604/repeatTask', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -27,7 +27,7 @@ const runRepeatTaskTests = async () => {
     // Success test
     try {
         console.log('Running success test for /repeatTask endpoint');
-        const response = await fetch('http://127.0.0.1:2604/api/repeatTask', {
+        const response = await fetch('http://127.0.0.1:2604/repeatTask', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

@@ -12,7 +12,7 @@ const runAddTaskTests = async () => {
     // Failure test (example)
     try {
         console.log('Running failure test for /addTask endpoint');
-        const response = await fetch('http://127.0.0.1:2604/api/addTask', {
+        const response = await fetch('http://127.0.0.1:2604/addTask', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -40,7 +40,7 @@ const runAddTaskTests = async () => {
     console.log('Running success test for /addTask endpoint');
     try {
         // Success test (example)
-        const response = await fetch('http://127.0.0.1:2604/api/addTask', {
+        const response = await fetch('http://127.0.0.1:2604/addTask', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

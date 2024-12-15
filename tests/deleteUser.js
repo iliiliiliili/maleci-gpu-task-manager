@@ -9,7 +9,7 @@ const runDeleteUserTests = async () => {
     // Failure test (invalid token)
     try {
         console.log('Running failure test for /deleteUser endpoint (invalid token)');
-        const response = await fetch('http://127.0.0.1:2604/api/deleteUser', {
+        const response = await fetch('http://127.0.0.1:2604/deleteUser', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -30,7 +30,7 @@ const runDeleteUserTests = async () => {
     // Success test
     try {
         console.log('Running success test for /deleteUser endpoint');
-        const response = await fetch('http://127.0.0.1:2604/api/deleteUser', {
+        const response = await fetch('http://127.0.0.1:2604/deleteUser', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

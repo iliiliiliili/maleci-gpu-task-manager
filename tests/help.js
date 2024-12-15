@@ -7,7 +7,7 @@ const runHelpTests = async () => {
     // Failure test
     try {
         console.log('Running failure test for /help endpoint (unexpected data)');
-        const response = await fetch('http://127.0.0.1:2604/api/help', {
+        const response = await fetch('http://127.0.0.1:2604/help', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -25,7 +25,7 @@ const runHelpTests = async () => {
     // Success test
     try {
         console.log('Running success test for /help endpoint');
-        const response = await fetch('http://127.0.0.1:2604/api/help', {
+        const response = await fetch('http://127.0.0.1:2604/help', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

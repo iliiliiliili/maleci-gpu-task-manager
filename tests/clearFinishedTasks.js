@@ -7,7 +7,7 @@ const runClearFinishedTasksTests = async () => {
     // Failure test (example: using invalid token)
     try {
         console.log('Running failure test for /clearFinishedTasks endpoint');
-        const response = await fetch('http://127.0.0.1:2604/api/clearFinishedTasks', {
+        const response = await fetch('http://127.0.0.1:2604/clearFinishedTasks', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -25,7 +25,7 @@ const runClearFinishedTasksTests = async () => {
     // Success test
     try {
         console.log('Running success test for /clearFinishedTasks endpoint');
-        const response = await fetch('http://127.0.0.1:2604/api/clearFinishedTasks', {
+        const response = await fetch('http://127.0.0.1:2604/clearFinishedTasks', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
