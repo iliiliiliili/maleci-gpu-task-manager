@@ -2,12 +2,18 @@ import fetch from 'node-fetch';
 import assert from 'assert';
 import chalk from 'chalk';
 import database from '../database.js';
+import fs from 'fs';
+import path from 'path';
+
+const settingsPath = path.resolve('./settings.json');
+const settings = JSON.parse(fs.readFileSync(settingsPath, 'utf-8'));
+const port = settings.ports.restApi;
 
 const runShowQueueTests = async () => {
     // Failure test (example: using invalid token)
     try {
         console.log('Running failure test for /showQueue endpoint');
-        const response = await fetch('http://127.0.0.1:2604/showQueue', {
+        const response = await fetch(`http://127.0.0.1:${port}/showQueue`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -25,7 +31,7 @@ const runShowQueueTests = async () => {
     // Success test
     try {
         console.log('Running success test for /showQueue endpoint');
-        const response = await fetch('http://127.0.0.1:2604/showQueue', {
+        const response = await fetch(`http://127.0.0.1:${port}/showQueue`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

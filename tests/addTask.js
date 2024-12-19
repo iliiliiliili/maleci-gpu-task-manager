@@ -1,9 +1,14 @@
 import fetch from 'node-fetch';
 import assert from 'assert';
-import path from 'path';
 import { fileURLToPath } from 'url';
 import database from '../database.js';
 import chalk from 'chalk';
+import fs from 'fs';
+import path from 'path';
+
+const settingsPath = path.resolve('./settings.json');
+const settings = JSON.parse(fs.readFileSync(settingsPath, 'utf-8'));
+const port = settings.ports.restApi;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -12,7 +17,7 @@ const runAddTaskTests = async () => {
     // Failure test (example)
     try {
         console.log('Running failure test for /addTask endpoint');
-        const response = await fetch('http://127.0.0.1:2604/addTask', {
+        const response = await fetch(`http://127.0.0.1:${port}/addTask`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -40,7 +45,7 @@ const runAddTaskTests = async () => {
     console.log('Running success test for /addTask endpoint');
     try {
         // Success test (example)
-        const response = await fetch('http://127.0.0.1:2604/addTask', {
+        const response = await fetch(`http://127.0.0.1:${port}/addTask`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

@@ -1,6 +1,15 @@
 import fetch from 'node-fetch';
 import assert from 'assert';
 import chalk from 'chalk';
+import fs from 'fs';
+import path from 'path';
+
+const settingsPath = path.resolve('./settings.json');
+const settings = JSON.parse(fs.readFileSync(settingsPath, 'utf-8'));
+const port = settings.ports.restApi;
+console.log('SETTINGS PATH', settingsPath);
+console.log('SETTINGS:', settings);
+console.log('PORT:', port);
 
 const username = 'farund2007';
 const password = 'null';
@@ -11,7 +20,7 @@ const runLoginTests = async () => {
     // Failure test (example: using invalid credentials)
     try {
         console.log('Running failure test for /login endpoint');
-        const response = await fetch('http://127.0.0.1:2604/login', {
+        const response = await fetch(`http://127.0.0.1:${port}/login`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -29,7 +38,7 @@ const runLoginTests = async () => {
     // Success test
     try {
         console.log('Running success test for /login endpoint');
-        const response = await fetch('http://127.0.0.1:2604/login', {
+        const response = await fetch(`http://127.0.0.1:${port}/login`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

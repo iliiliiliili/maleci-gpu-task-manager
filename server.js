@@ -28,21 +28,32 @@ import bodyParser from 'body-parser';
 import restRoutes from './restApi.js';
 import cors from 'cors';
 import { externalState } from './server-core.js';
+import { findAvailablePort, updateSettings } from './server-utils.js';
+
+const delimiter = '\n\n\n\n';
 
 const app = express();
-const port = 2604;
+const PORT_RANGE = [2600, 2601, 2602, 2603, 2604];
 
 app.use(cors());
 
 app.use(bodyParser.json());
 app.use('/', restRoutes);
 
+async function startServer() {
+    const availablePort = await findAvailablePort(PORT_RANGE);
+    if (availablePort !== null) {
+        updateSettings(availablePort);
+        app.listen(availablePort, '0.0.0.0', () => {
+            console.log(`REST API Server listening on port ${availablePort}`);
+        });
+    } else {
+        console.error('No available ports in the range. Exiting.');
+    }
+}
 
-const delimiter = '\n\n\n\n';
+startServer();
 
-app.listen(port, '0.0.0.0', () => {
-    console.log(`REST API Server listening on port ${port}`);
-});
 
 /**
  * @typedef {object} Message

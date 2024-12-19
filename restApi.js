@@ -6,6 +6,11 @@ import { externalState } from './server-core.js';
 
 const router = express.Router();
 
+// endpoint to get correct port on client
+router.get('/status', (req, res) => {
+    res.json({ status: 'ok' });
+});
+
 router.post('/login', (req, res) => {
     // TODO remove keyWord when better way to authorize from server is implemented
     const {username, password, keyWord} = req.body;
@@ -238,6 +243,9 @@ router.post('/setAccessLevel', async (req, res) => {
 router.post('/createUser', async (req, res) => {
     try {
         const { targetUsername, password, accessLevel, token } = req.body;
+        console.log('TYPE OF ACCESS LEVEL')
+        console.log(typeof(accessLevel))
+        console.log(accessLevel)
         const tokenStatus = await checkToken(token);
         if (tokenStatus.success) {
             const username = tokenStatus.username.login;
